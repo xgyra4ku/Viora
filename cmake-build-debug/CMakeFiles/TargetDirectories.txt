@@ -1,8 +1,0 @@
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/CMakeFiles/edit_cache.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/server/CMakeFiles/Server.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/server/CMakeFiles/edit_cache.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/server/CMakeFiles/rebuild_cache.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/client/CMakeFiles/Client.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/client/CMakeFiles/edit_cache.dir
-E:/C_Projects_VS/cmake_project/MessengerViora/cmake-build-debug/client/CMakeFiles/rebuild_cache.dir
