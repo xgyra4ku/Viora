@@ -1,0 +1,4 @@
+#ifndef STRUCTMESSAGE_H
+#define STRUCTMESSAGE_H
+
+#endif //STRUCTMESSAGE_H
