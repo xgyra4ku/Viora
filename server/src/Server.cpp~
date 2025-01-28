@@ -1,5 +1,7 @@
 #include "../inc/Server.h"
 #include <functional> // для std::bind
+#include "../inc/structMessage.h"
+
 Server::Server() {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -50,21 +52,22 @@ void Server::run() {
 }
 
 void Server::HandleClient(const SOCKET clientSocket) {
-    char buffer[1024];
+    std::cout << "New client connected\n";
+
     while (true) {
-        const int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+        const int bytesReceived = recv(clientSocket, (char*)&message, sizeof(message), 0);
         if (bytesReceived <= 0) {
             std::cout << "Client disconnected\n";
             closesocket(clientSocket);
             return;
         }
-        buffer[bytesReceived] = '\0';
-        std::cout << "Received: " << buffer << std::endl;
+       // message[bytesReceived] = '\0';
+       std::cout << "Received: " << message.type<< std::endl;
 
         // Пересылка сообщения всем клиентам
         for (auto& client : clients) {
             if (client != clientSocket) {
-                send(client, buffer, bytesReceived, 0);
+                send(client, (char*)&message, sizeof(message), 0);
             }
         }
     }

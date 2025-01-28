@@ -2,19 +2,24 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <thread>
+#include <map>
 
 #pragma comment(lib, "ws2_32.lib")
-
+struct sMessage {
+    int type{};
+    std::map<std::string, std::string> data;
+};
+sMessage message;
+sMessage message1;
 void ReceiveMessages(SOCKET socket) {
-    char buffer[1024];
     while (true) {
-        int bytesReceived = recv(socket, buffer, sizeof(buffer), 0);
+        int bytesReceived = recv(socket, (char*)&message, sizeof(message), 0);
         if (bytesReceived <= 0) {
             std::cout << "Disconnected from server\n";
             break;
         }
-        buffer[bytesReceived] = '\0';
-        std::cout << "Received: " << buffer << std::endl;
+        //buffer[bytesReceived] = '\0';
+        std::cout << "Received: " << message.type << " " << message1.data["key"] << std::endl;
     }
 }
 
@@ -49,9 +54,11 @@ int main() {
     std::thread(ReceiveMessages, clientSocket).detach();
 
     std::string message;
+    message1.type = 1;
+    message1.data["key"] = "value";
     while (true) {
         std::getline(std::cin, message);
-        send(clientSocket, message.c_str(), message.size(), 0);
+        send(clientSocket, (char*)&message1, sizeof(message1), 0);
     }
 
     closesocket(clientSocket);

@@ -15,6 +15,7 @@ constexpr int SERVER_PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
 
 class Server {
+    sMessage message;
     std::vector<SOCKET> clients;
     sockaddr_in serverAddr{}, clientAddr{};
     SOCKET serverSocket{}, clientSocket{};

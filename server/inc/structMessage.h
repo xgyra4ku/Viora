@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-struct message {
+struct sMessage {
     int type;
     std::map<std::string, std::string> data;
 };
