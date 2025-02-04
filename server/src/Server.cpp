@@ -55,19 +55,24 @@ void Server::HandleClient(const SOCKET clientSocket) {
     std::cout << "New client connected\n";
 
     while (true) {
-        const int bytesReceived = recv(clientSocket, (char*)&message, sizeof(message), 0);
+        std::vector<char> buffer(1024);
+        const int bytesReceived = recv(clientSocket, buffer.data(), buffer.size(), 0);
         if (bytesReceived <= 0) {
             std::cout << "Client disconnected\n";
             closesocket(clientSocket);
             return;
         }
+        sMessage b;
+
+        buffer.resize(bytesReceived);
+        b.deserialize(buffer);
        // message[bytesReceived] = '\0';
-       std::cout << "Received: " << message.type<< std::endl;
+       std::cout << "Received: " << b.data["key"]<< "\n" << b.data["msg"] << std::endl;
 
         // Пересылка сообщения всем клиентам
         for (auto& client : clients) {
             // if (client != clientSocket) {
-                send(client, (char*)&message, sizeof(message), 0);
+                send(client, buffer.data(), buffer.size(), 0);
             // }
         }
     }

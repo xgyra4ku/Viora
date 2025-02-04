@@ -66,9 +66,9 @@ void Server::HandleClient(const SOCKET clientSocket) {
 
         // Пересылка сообщения всем клиентам
         for (auto& client : clients) {
-            if (client != clientSocket) {
+            // if (client != clientSocket) {
                 send(client, (char*)&message, sizeof(message), 0);
-            }
+            // }
         }
     }
 }
