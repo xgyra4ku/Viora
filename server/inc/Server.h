@@ -6,6 +6,7 @@
 #include <ws2tcpip.h>
 #include <vector>
 #include <thread>
+#include <sql.h>
 
 #include "structMessage.h"
 
@@ -22,6 +23,8 @@ class Server {
     int clientAddrSize{};
 
     void HandleClient(SOCKET clientSocket);
+    void connectDatabases();
+    void processMessages();
 public:
     /**
      * Default constructor.
@@ -35,6 +38,7 @@ public:
     ~Server();
 
     void run();
+    void stop();
 };
 
 

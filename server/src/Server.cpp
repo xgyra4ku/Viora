@@ -60,15 +60,17 @@ void Server::HandleClient(const SOCKET clientSocket) {
         if (bytesReceived <= 0) {
             std::cout << "Client disconnected\n";
             closesocket(clientSocket);
-            return;
+            return;//☻
         }
         sMessage b;
 
         buffer.resize(bytesReceived);
         b.deserialize(buffer);
-       // message[bytesReceived] = '\0';
-       std::cout << "Received: " << b.data["key"]<< "\n" << b.data["msg"] << std::endl;
-
+        // message[bytesReceived] = '\0';
+        std::cout << "Received: " << b.data["key"]<< "\n" << b.data["msg"] << std::endl;
+        for (const auto& [key, value] : b.data) {
+            std::cout << key << ": " << value << std::endl;
+        }
         // Пересылка сообщения всем клиентам
         for (auto& client : clients) {
             // if (client != clientSocket) {
@@ -76,4 +78,17 @@ void Server::HandleClient(const SOCKET clientSocket) {
             // }
         }
     }
+}
+
+void Server::stop() {
+    closesocket(serverSocket);
+    WSACleanup();
+}
+
+void Server::processMessages() {
+
+}
+
+void Server::connectDatabases() {
+
 }
