@@ -27,7 +27,7 @@ private:
 
     void HandleClient(SOCKET clientSocket);
     void connectDatabases();
-    void processMessages(std::map<std::string, std::string> &data);
+    void processMessages();
 public:
     /**
      * Default constructor.

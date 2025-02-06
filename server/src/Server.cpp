@@ -1,17 +1,22 @@
 #include "../inc/Server.h"
 #include <functional> // для std::bind
-#include "../inc/structMessage.h"
+#include "../inc/structures.h"
 
-Server::Server() {
+#include <thread>
+#include <sql.h>
+#include <ws2tcpip.h>
+
+
+Server::Server(int argc, char* argv[]) {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "WSAStartup failed\n";
+        cmd.printINFO("WSAStartup failed");
         return;
     }
 
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == INVALID_SOCKET) {
-        std::cerr << "Socket creation failed\n";
+        cmd.printERROR("Socket creation failed");
         WSACleanup();
         return;
     }
@@ -21,60 +26,69 @@ Server::Server() {
     serverAddr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        std::cerr << "Bind failed\n";
+        cmd.printERROR("Bind failed");
         closesocket(serverSocket);
         WSACleanup();
         return;
     }
 
     if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) {
-        std::cerr << "Listen failed\n";
+        cmd.printERROR("Listen failed");
         closesocket(serverSocket);
         WSACleanup();
         return;
     }
 
-    std::cout << "Server is listening on port 12345...\n";
+    cmd.printINFO("Server is listening on port 12345...");
 }
 Server::~Server() = default;
 
 void Server::run() {
     while (true) {
-            SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
-            if (clientSocket == INVALID_SOCKET) {
-                std::cerr << "Accept failed\n";
-                continue;
-            }
-
-            clients.push_back(clientSocket);
-            std::thread(std::bind(&Server::HandleClient, this, clientSocket)).detach();
+        SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
+        if (clientSocket == INVALID_SOCKET) {
+            cmd.printERROR("Accept failed");
+            continue;
         }
+
+        sClientInfo clientInfo;
+        clientInfo.socket = clientSocket;
+        clientInfo.username = "Unknown";
+        clients.push_back(clientInfo);
+        std::thread([this, clientSocket] { HandleClient(clientSocket); }).detach();
+    }
 }
 
 void Server::HandleClient(const SOCKET clientSocket) {
-    std::cout << "New client connected\n";
+    cmd.printINFO("Client connected");
+    char bufferUsernameConnection[64];
+    if (const int bytesReceived = recv(clientSocket, bufferUsernameConnection, sizeof(bufferUsernameConnection), 0); bytesReceived <= 0) {
+        cmd.printINFO("Client disconnected");
+        closesocket(clientSocket);
+        return;
+    }
 
     while (true) {
         std::vector<char> buffer(1024);
         const int bytesReceived = recv(clientSocket, buffer.data(), buffer.size(), 0);
         if (bytesReceived <= 0) {
-            std::cout << "Client disconnected\n";
+            cmd.printINFO("Client disconnected");
             closesocket(clientSocket);
-            return;//☻
+            return;
         }
         sMessage b;
 
         buffer.resize(bytesReceived);
         b.deserialize(buffer);
         // message[bytesReceived] = '\0';
-        std::cout << "Received: " << b.data["key"]<< "\n" << b.data["msg"] << std::endl;
+        cmd.printINFO("Received: " + b.data["key"] + " " + b.data["msg"]);
         for (const auto& [key, value] : b.data) {
-            std::cout << key << ": " << value << std::endl;
+            cmd.printINFO(key + " : " + value);
         }
         // Пересылка сообщения всем клиентам
         for (auto& client : clients) {
             // if (client != clientSocket) {
-                send(client, buffer.data(), buffer.size(), 0);
+                send(client.socket, buffer.data(), buffer.size(), 0);
             // }
         }
     }
@@ -85,8 +99,14 @@ void Server::stop() {
     WSACleanup();
 }
 
-void Server::processMessages() {
-
+void Server::processMessages(std::map<std::string, std::string>& data) {
+    if (data["username"] != "") {
+        for (auto& client : clients) {
+            if (client.username == data["username"]) {
+                client.username = data["newUsername"];
+            }
+        }
+    }
 }
 
 void Server::connectDatabases() {

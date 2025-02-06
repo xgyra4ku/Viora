@@ -60,4 +60,9 @@ struct sMessage {
     }
 };
 
+struct sClientInfo {
+    std::string username; // Имя пользователя
+    SOCKET socket;        // Сокет клиента
+};
+
 #endif // STRUCTURE_H

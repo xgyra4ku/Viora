@@ -19,7 +19,8 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(Server main.cpp
     src/Server.cpp
     inc/Server.h
-    inc/structMessage.h
+        inc/structures.h
+        src/Info.cpp
 )
 #
 ## Линкуем библиотеку PortAudio

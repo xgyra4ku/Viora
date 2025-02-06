@@ -1,7 +1,7 @@
 #include "inc/server.h"
 
 int main(int argc, char* argv[]) {
-    Server server;
+    Server server(argc, argv);
     server.run();
     return 0;
 }
