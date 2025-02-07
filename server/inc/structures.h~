@@ -1,5 +1,5 @@
-#ifndef STRUCTURE_H
-#define STRUCTURE_H
+#ifndef STRUCTURES_H
+#define STRUCTURES_H
 
 #include <map>
 #include <string>
@@ -65,4 +65,4 @@ struct sClientInfo {
     SOCKET socket;        // Сокет клиента
 };
 
-#endif // STRUCTURE_H
+#endif // STRUCTURES_H

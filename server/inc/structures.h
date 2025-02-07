@@ -62,6 +62,7 @@ struct sMessage {
 
 struct sClientInfo {
     std::string username; // Имя пользователя
+    std::string id; // ID УСТРОЙСТВА
     SOCKET socket;        // Сокет клиента
 };
 

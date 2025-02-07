@@ -127,3 +127,4 @@ void Server::connectDatabases() {
 
 }
 
+void Server::get
