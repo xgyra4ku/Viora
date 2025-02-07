@@ -3,6 +3,7 @@
 
 #include <winsock2.h>
 #include <vector>
+#include <pqxx/pqxx>
 
 #include "structures.h"
 #include "Info.h"
@@ -14,6 +15,9 @@ constexpr int BUFFER_SIZE = 1024;
 
 class Server {
 private:
+    pqxx::connection* conn;
+    pqxx::work* txn;
+
     Info cmd;
 
     sMessage message;

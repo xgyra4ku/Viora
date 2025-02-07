@@ -3,9 +3,9 @@
 #include "../inc/structures.h"
 
 #include <thread>
-#include <sql.h>
 #include <ws2tcpip.h>
-
+#include <pqxx/pqxx>
+#include <iostream>
 
 Server::Server(int argc, char* argv[]) {
     WSADATA wsaData;
@@ -124,6 +124,24 @@ void Server::processMessages(std::map<std::string, std::string>& data) {
 }
 
 void Server::connectDatabases() {
+    try {
+        conn = new pqxx::connection(
+            "dbname=testdb "
+                  "user=postgres "
+                  "password=your_password "
+                  "host=localhost "
+                  "port=5432"
+                  );
 
+        if (conn->is_open()) {
+            cmd.printINFO("Connection successful! Database: ", false);
+            std::cout << conn->dbname() << std::endl;
+            txn = new pqxx::work(*conn);
+        } else {
+            cmd.printERROR("Connection failed!", false);
+        }
+    } catch (const std::exception &e) {
+        cmd.printERROR(e.what());
+    }
 }
 
