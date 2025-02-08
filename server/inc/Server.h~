@@ -38,7 +38,7 @@ private:
     void processMessages(std::map<std::string, std::string> &data);
 
     static bool searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument);
-    static std::string getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);
+    static int getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);
 public:
     /**
      * Default constructor.

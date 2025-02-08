@@ -7,7 +7,39 @@
 #include <pqxx/pqxx>
 #include <iostream>
 
-Server::Server(int argc, char* argv[]) {
+Server::Server(int argc, char* argv[])
+    : conn()
+    , txn()
+    , ntxn()
+{
+    std::vector<std::string> args(argv + 1, argv + argc);
+    if (searchArgumentInVector(args, "--help")) {
+        std::cout << "Usage: server [options]\n";
+        std::cout << "Options:\n";
+        std::cout << "--help: Show this help message\n";
+        std::cout << "--version: Show this version server\n";
+        std::cout << "--port <port>: Set the port number (default: 8080)\n";
+        std::cout << "--address <address>: Set the server address (default: 0.0.0.0)\n";
+        return;
+    }
+    if (searchArgumentInVector(args, "--version")) {
+        std::cout << "Version: " << SERVER_VERSION << std::endl;
+        return;
+    }
+    if (searchArgumentInVector(args, "--port")) {
+        std::string port = getArgumentValue(args, "--port");
+        serverAddr.sin_port = htons(std::stoi(port));
+    }
+    else {
+        serverAddr.sin_port = htons(12345);
+    }
+
+    if (searchArgumentInVector(args, "--address")) {
+        std::string address = getArgumentValue(args, "--address");
+        inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr);
+    } else {
+        serverAddr.sin_addr.s_addr = INADDR_ANY;
+    }
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         cmd.printINFO("WSAStartup failed");
@@ -22,9 +54,6 @@ Server::Server(int argc, char* argv[]) {
     }
 
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(12345);
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-
     if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
         cmd.printERROR("Bind failed");
         closesocket(serverSocket);
@@ -137,6 +166,7 @@ void Server::connectDatabases() {
             cmd.printINFO("Connection successful! Database: ", false);
             std::cout << conn->dbname() << std::endl;
             txn = new pqxx::work(*conn);
+            ntxn = new pqxx::nontransaction(*conn);
         } else {
             cmd.printERROR("Connection failed!", false);
         }
@@ -144,4 +174,24 @@ void Server::connectDatabases() {
         cmd.printERROR(e.what());
     }
 }
+
+void Server::disconnectDatabases() const {
+    conn->close();
+}
+
+bool Server::searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument) {
+    return std::binary_search(vector.begin(), vector.end(), argument);
+}
+
+std::string Server::getArgumentValue(const std::vector<std::string> &vector, const std::string &argument) {
+    if (const auto it = std::find(vector.begin(), vector.end(), argument); it != vector.end()) {
+        if (const size_t pos = std::distance(vector.begin(), it); pos+1 < vector.size()) {
+            return vector[pos+1];
+        }
+    }
+    return "";
+}
+
+
+
 

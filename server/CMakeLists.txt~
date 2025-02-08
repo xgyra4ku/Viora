@@ -2,33 +2,24 @@ cmake_minimum_required(VERSION 3.10)
 project(Viora)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_PREFIX_PATH "C:/vcpkg/installed/x64-windows")
-find_package(libpqxx CONFIG REQUIRED)
 
+# Пути к установленной libpqxx
+set(PQXX_INCLUDE_DIR "C:/pqxx/include")  # Укажи путь к заголовкам
+set(PQXX_LIB_DIR "C:/pqxx/lib")  # Укажи путь к собранным библиотекам
 
-#
-## Указываем путь к исходным файлам PortAudio
-#set(PORTAUDIO_INCLUDE_DIR E:/C_Projects_VS/cmake_project/voicebetServer/third_party/portaudio/include)
-#
-## Указываем путь к библиотекам PortAudio
-#set(PORTAUDIO_LIB_DIR E:/C_Projects_VS/cmake_project/voicebetServer/third_party/portaudio/build)
-#
-## Добавляем путь к заголовочным файлам PortAudio
-#include_directories(${PORTAUDIO_INCLUDE_DIR})
-#
-## Добавляем библиотеки для линковки
-#link_directories(${PORTAUDIO_LIB_DIR})
+# Подключаем заголовочные файлы
+include_directories(${PQXX_INCLUDE_DIR})
+
+# Добавляем путь к библиотекам
+link_directories(${PQXX_LIB_DIR})
 
 # Добавляем основной исходный файл для сервера
 add_executable(Server main.cpp
-    src/Server.cpp
-    inc/Server.h
+        src/Server.cpp
+        inc/Server.h
         inc/structures.h
         src/Info.cpp
 )
-#
-## Линкуем библиотеку PortAudio
-#target_link_libraries(Server portaudio)
 
-# Линкуем библиотеку ws2_32 для работы с сокетами
-target_link_libraries(Server ws2_32 PRIVATE libpqxx::pqxx)
+# Линкуем библиотеки
+target_link_libraries(Server ws2_32 pqxx)
