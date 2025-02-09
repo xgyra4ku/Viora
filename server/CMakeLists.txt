@@ -3,15 +3,9 @@ project(Viora)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Пути к установленной libpqxx
-set(PQXX_INCLUDE_DIR "C:/libpqxx/include")  # Укажи путь к заголовкам
-set(PQXX_LIB_DIR "C:/libpqxx/lib")  # Укажи путь к собранным библиотекам
-
-# Подключаем заголовочные файлы
-include_directories(${PQXX_INCLUDE_DIR})
-
-# Добавляем путь к библиотекам
-link_directories(${PQXX_LIB_DIR})
+# Указываем пути к файлам PostgreSQL
+set(POSTGRESQL_INCLUDE_DIR "C:/Program Files/PostgreSQL/17/include")
+set(POSTGRESQL_LIB_DIR "C:/Program Files/PostgreSQL/17/lib")
 
 # Добавляем основной исходный файл для сервера
 add_executable(Server main.cpp
@@ -21,5 +15,8 @@ add_executable(Server main.cpp
         src/Info.cpp
 )
 
-# Линкуем библиотеки
-target_link_libraries(Server ws2_32 pqxx)
+# Указываем компилятору путь к заголовочным файлам
+target_include_directories(Server PRIVATE ${POSTGRESQL_INCLUDE_DIR})
+
+# Линкуем с библиотекой libpq
+target_link_libraries(Server ws2_32 ${POSTGRESQL_LIB_DIR}/libpq.lib)

@@ -3,15 +3,6 @@ project(Viora)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Пути к установленной libpqxx
-set(PQXX_INCLUDE_DIR "C:/pqxx/include")  # Укажи путь к заголовкам
-set(PQXX_LIB_DIR "C:/pqxx/lib")  # Укажи путь к собранным библиотекам
-
-# Подключаем заголовочные файлы
-include_directories(${PQXX_INCLUDE_DIR})
-
-# Добавляем путь к библиотекам
-link_directories(${PQXX_LIB_DIR})
 
 # Добавляем основной исходный файл для сервера
 add_executable(Server main.cpp
@@ -22,4 +13,4 @@ add_executable(Server main.cpp
 )
 
 # Линкуем библиотеки
-target_link_libraries(Server ws2_32 pqxx)
+target_link_libraries(Server ws2_32 )

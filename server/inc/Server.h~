@@ -2,10 +2,11 @@
 #define SERVER_H
 
 #define SERVER_VERSION "0.0.2"
+#define CONN_INFO_DEFAULT "dbname=testdb user=kyra password=1029 host=localhost port=5555"
 
 #include <winsock2.h>
 #include <vector>
-#include <pqxx/pqxx>
+#include <libpq-fe.h>
 
 #include "structures.h"
 #include "Info.h"
@@ -16,10 +17,10 @@ constexpr int SERVER_PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
 
 class Server {
-private:
-    pqxx::connection* conn;
-    pqxx::work* txn;
-    pqxx::nontransaction* ntxn;
+    bool DEBUG = false;
+
+
+    PGconn *conn;
 
     Info cmd;
 
@@ -32,10 +33,15 @@ private:
 
     int clientAddrSize{};
 
+    std::string address, port;
+    const char *connectionInfo = CONN_INFO_DEFAULT;
+
+
     void HandleClient(SOCKET clientSocket);
     void connectDatabases();
-    void disconnectDatabases() const;
+    void disconnectDatabases();
     void processMessages(std::map<std::string, std::string> &data);
+    void processArguments(int argc, char* argv[]);
 
     static bool searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument);
     static int getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);

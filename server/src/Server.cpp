@@ -4,53 +4,23 @@
 
 #include <thread>
 #include <ws2tcpip.h>
-#include <pqxx/pqxx>
 #include <iostream>
 
 Server::Server(int argc, char* argv[])
     : conn()
-    , txn()
-    , ntxn()
 {
-    std::vector<std::string> args(argv + 1, argv + argc);
-    if (searchArgumentInVector(args, "--help")) {
-        std::cout << "Usage: server [options]\n";
-        std::cout << "Options:\n";
-        std::cout << "--help: Show this help message\n";
-        std::cout << "--version: Show this version server\n";
-        std::cout << "--port <port>: Set the port number (default: 8080)\n";
-        std::cout << "--address <address>: Set the server address (default: 0.0.0.0)\n";
-        return;
-    }
-    if (searchArgumentInVector(args, "--version")) {
-        std::cout << "Version: " << SERVER_VERSION << std::endl;
-        return;
-    }
-    if (searchArgumentInVector(args, "--port")) {
-        std::string port = getArgumentValue(args, "--port");
-        serverAddr.sin_port = htons(std::stoi(port));
-    }
-    else {
-        serverAddr.sin_port = htons(12345);
-    }
-
-    if (searchArgumentInVector(args, "--address")) {
-        std::string address = getArgumentValue(args, "--address");
-        inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr);
-    } else {
-        serverAddr.sin_addr.s_addr = INADDR_ANY;
-    }
+    processArguments(argc, argv);
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         cmd.printINFO("WSAStartup failed");
-        return;
+        exit(1);
     }
 
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == INVALID_SOCKET) {
         cmd.printERROR("Socket creation failed");
         WSACleanup();
-        return;
+        exit(2);
     }
 
     serverAddr.sin_family = AF_INET;
@@ -58,19 +28,89 @@ Server::Server(int argc, char* argv[])
         cmd.printERROR("Bind failed");
         closesocket(serverSocket);
         WSACleanup();
-        return;
+        exit(3);
     }
 
     if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) {
         cmd.printERROR("Listen failed");
         closesocket(serverSocket);
         WSACleanup();
-        return;
+        exit(4);
     }
 
-    cmd.printINFO("Server is listening on port 12345...");
+    cmd.printINFO("Server is listening on " + address + ":" + port);
 }
 Server::~Server() = default;
+
+void Server::processArguments(int argc, char *argv[]) {
+    std::vector<std::string> args(argv + 1, argv + argc);
+    if (searchArgumentInVector(args, "--help") || argc == 1) {
+        std::cout << "Usage: server [options]\n"
+        << "Options:\n"
+        << "--help: Show this help message\n"
+        << "--version: Show this version server\n"
+        << "--port <port>: Set the port number (default: 8080)\n"
+        << "--address <address>: Set the server address (default: 0.0.0.0)\n"
+        << "--debug: Enable debug mode (default: false)\n"
+        << "--db <address> <port> <user> <password> <database>: Connect to the database (default: 127.0.0.1 5432 postgres postgres postgres)\n"
+        << "--testdb: Connect to the test database"
+        << std::endl;
+        exit(0);
+    }
+    if (searchArgumentInVector(args, "--version")) {
+        std::cout << "Version: " << SERVER_VERSION << std::endl;
+        exit(0);
+    }
+    if (searchArgumentInVector(args, "--port")) {
+        const int num = getArgumentValue(args, "--port");
+        port = num < args.size() ? args[num+1] : "";
+        if (port.empty()) {
+            cmd.printERROR("Invalid port number");
+            exit (1);
+        }
+        // нужно добавить проверку правильного ввода порта
+        serverAddr.sin_port = htons(std::stoi(port));
+    }
+    else {
+        serverAddr.sin_port = htons(12345);
+        port = "12345";
+    }
+
+    if (searchArgumentInVector(args, "--address")) {
+        const int num = getArgumentValue(args, "--address");
+        address = num < args.size() ? args[num+1] : "";
+        if (address.empty()) {
+            cmd.printERROR("Invalid address");
+            exit (1);
+        }
+        // нужно добавить проверку правильного ввода адреса
+        inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr);
+    } else {
+        serverAddr.sin_addr.s_addr = INADDR_ANY;
+        address = "0.0.0.0";
+    }
+    if (searchArgumentInVector(args, "--debug")) {
+        DEBUG = true;
+    }
+    if (searchArgumentInVector(args, "--db")) {
+        int db = getArgumentValue(args, "--db");
+        if (db+5 > args.size()) {
+            cmd.printERROR("Invalid database connection string");
+            exit (1);
+        }
+        connectionInfo = (std::string("host=") + args[db+1]
+            + " port=" + args[db+2]
+            + " user=" + args[db+3]
+            + " password=" + args[db+4]
+            + " dbname=" + args[db+5]).c_str();
+    }
+    if (searchArgumentInVector(args, "--testdb")) {
+        connectDatabases();
+        disconnectDatabases();
+        exit(0);
+    }
+}
+
 
 void Server::run() {
     while (true) {
@@ -154,42 +194,37 @@ void Server::processMessages(std::map<std::string, std::string>& data) {
 
 void Server::connectDatabases() {
     try {
-        conn = new pqxx::connection(
-            "dbname=testdb "
-                  "user=postgres "
-                  "password=your_password "
-                  "host=localhost "
-                  "port=5432"
-                  );
-
-        if (conn->is_open()) {
+        conn = PQconnectdb(CONN_INFO_DEFAULT);
+        if (PQstatus(conn) == CONNECTION_OK) {
             cmd.printINFO("Connection successful! Database: ", false);
-            std::cout << conn->dbname() << std::endl;
-            txn = new pqxx::work(*conn);
-            ntxn = new pqxx::nontransaction(*conn);
+            std::cout << PQdb(conn) << std::endl;
         } else {
-            cmd.printERROR("Connection failed!", false);
+            cmd.printERROR("Connection failed!");
         }
     } catch (const std::exception &e) {
         cmd.printERROR(e.what());
     }
 }
 
-void Server::disconnectDatabases() const {
-    conn->close();
+void Server::disconnectDatabases() {
+    if (PQstatus(conn) == CONNECTION_OK) {
+        PQfinish(conn);
+        cmd.printINFO("Disconnection successful! Database: ", false);
+        std::cout << PQdb(conn) << std::endl;
+    } else {
+        cmd.printERROR("Disconnection failed!");
+    }
 }
 
 bool Server::searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument) {
-    return std::binary_search(vector.begin(), vector.end(), argument);
+    return std::find(vector.begin(), vector.end(), argument) != vector.end();
 }
 
-std::string Server::getArgumentValue(const std::vector<std::string> &vector, const std::string &argument) {
+int Server::getArgumentValue(const std::vector<std::string> &vector, const std::string &argument) {
     if (const auto it = std::find(vector.begin(), vector.end(), argument); it != vector.end()) {
-        if (const size_t pos = std::distance(vector.begin(), it); pos+1 < vector.size()) {
-            return vector[pos+1];
-        }
+        return static_cast<int>(std::distance(vector.begin(), it));
     }
-    return "";
+    return -1;
 }
 
 
