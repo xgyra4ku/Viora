@@ -1,66 +1,165 @@
+/**
+ *  Server
+ *  @version 0.0.21
+ *  @date 01.01.2025
+ *  @file Server.h
+ */
 #ifndef SERVER_H
 #define SERVER_H
 
-#define SERVER_VERSION "0.0.2"
-#define CONN_INFO_DEFAULT "host=localhost port=5555 dbname=testdb user=kyra password=1029 connect_timeout=10"
+/**
+ * Server version
+ */
+#define SERVER_VERSION "0.0.21"
+/**
+ * Default connection info
+ */
+#define CONN_INFO_DEFAULT "host=localhost port=5432 dbname=testdb user=postgres password=postgres connect_timeout=10"
 
+/**
+ * Includes
+ */
+// windsock2.h - для работы с сокетами
 #include <winsock2.h>
+// vector - для работы с векторами
 #include <vector>
+// lib-fe.h - для работы с базою̆ данных postgresql
 #include <libpq-fe.h>
 
+/**
+ * Local includes
+ */
+// structures.h - для работы с структурами
 #include "structures.h"
+// Info.h - для работы с информациею̆ и выводом
 #include "Info.h"
 
+/**
+ * Libs
+ */
 #pragma comment(lib, "ws2_32.lib")
 
+/**
+ * Constants
+ */
 constexpr int SERVER_PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
 
+/**
+ * Main server class
+ */
 class Server {
-    bool DEBUG = false;
+ /**
+  * Constants
+  */
+ const char *SERVER_ADDRESS = "127.0.0.1";
+ const char *connectionInfo = CONN_INFO_DEFAULT;
 
+ /**
+  * Flags
+  */
+ bool DEBUG = false;
 
-    PGconn *conn;
+ /**
+  * Objects and variables
+  */
+ //Databases
+ PGconn *conn;
+ std::string address, port;
+ //Info
+ Info cmd;
+ //Network
+ sMessage message;
+ sockaddr_in serverAddr, clientAddr;
+ SOCKET serverSocket, clientSocket;
+ int clientAddrSize;
 
-    Info cmd;
+ /**
+  * Vectors
+  */
+ std::vector<sClientInfo> clients;
+ /**
+  * Other variables
+  */
 
-    sMessage message;
+ /**
+  * Private functions
+  */
 
-    std::vector<sClientInfo> clients;
+ /**
+  * @brief HandleClient - это функция обработки клиента
+  * @param clientSocket - сокет клиента
+  */
+ void HandleClient(SOCKET clientSocket);
 
-    sockaddr_in serverAddr{}, clientAddr{};
-    SOCKET serverSocket{}, clientSocket{};
+ /**
+  * @brief processMessages - обработка сообщений
+  * @param data - данные которые пришли
+  */
+ void processMessages(std::map<std::string, std::string> &data);
 
-    int clientAddrSize{};
+ /**
+  * @brief connectDatabases - подключение к базам
+  */
+ void connectDatabases();
 
-    std::string address, port;
-    const char *connectionInfo = CONN_INFO_DEFAULT;
+ /**
+  * @brief disconnectDatabases - отключение от баз
+  */
+ void disconnectDatabases();
 
+ /**
+  * @brief processArguments - обработка аргументов
+  * @param argc - количество аргументов
+  * @param argv - аргументы
+  */
+ void processArguments(int argc, char *argv[]);
 
-    void HandleClient(SOCKET clientSocket);
-    void connectDatabases();
-    void disconnectDatabases();
-    void processMessages(std::map<std::string, std::string> &data);
-    void processArguments(int argc, char* argv[]);
+ /**
+  * Private static functions
+  */
 
-    static bool searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument);
-    static int getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);
+ /**
+  * @brief searchArgumentInVector - поиск аргумента в векторе
+  * @param vector - вектор с аргументами
+  * @param argument - аргумент
+  * @return если аргумент найден возвращает true если не найден возвращает false
+  */
+ static bool searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument);
+
+ /**
+  * @brief getArgumentValue - получение значения аргумента
+  * @param vector - вектор с аргументами
+  * @param argument - аргумент
+  * @return если аргумент найден возвращает его индекс если не найден возвращает -1
+  */
+ static int getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);
+
 public:
-    /**
-     * Default constructor.
-     * Initializes the server socket and addresses.
-     */
-    Server(int argc, char* argv[]);
-    /**
-     * Destructor for the Server class.
-     * Cleans up resources by closing sockets and performing necessary cleanup.
-     */
-    ~Server();
+ /**
+  * @brief Конструктор класса Server
+  * @param argc - количество аргументов
+  * @param argv - аргументы
+  */
+ Server(int argc, char *argv[]);
 
-    void run();
-    void stop();
+ /**
+  * @brief Деструктор
+  */
+ ~Server();
+
+ /**
+  * @brief run - запуск сервера
+  */
+ void run();
+
+ /**
+  * @brief stop - остановка сервера
+  */
+ void stop();
 };
 
-
-
+/**
+ * End
+ */
 #endif //SERVER_H

@@ -53,6 +53,7 @@ void Server::processArguments(int argc, char *argv[]) {
         << "--address <address>: Set the server address (default: 0.0.0.0)\n"
         << "--debug: Enable debug mode (default: false)\n"
         << "--db <address> <port> <user> <password> <database>: Connect to the database (default: 127.0.0.1 5432 postgres postgres postgres)\n"
+        << "--testdb: Connect to the test database"
         << std::endl;
         exit(0);
     }
@@ -76,7 +77,9 @@ void Server::processArguments(int argc, char *argv[]) {
     }
 
     if (searchArgumentInVector(args, "--address")) {
-        if (address = getArgumentValue(args, "--address"); address.empty()) {
+        const int num = getArgumentValue(args, "--address");
+        address = num < args.size() ? args[num+1] : "";
+        if (address.empty()) {
             cmd.printERROR("Invalid address");
             exit (1);
         }
@@ -91,10 +94,20 @@ void Server::processArguments(int argc, char *argv[]) {
     }
     if (searchArgumentInVector(args, "--db")) {
         int db = getArgumentValue(args, "--db");
-        if (db.empty()) {
+        if (db+5 > args.size()) {
             cmd.printERROR("Invalid database connection string");
             exit (1);
         }
+        connectionInfo = (std::string("host=") + args[db+1]
+            + " port=" + args[db+2]
+            + " user=" + args[db+3]
+            + " password=" + args[db+4]
+            + " dbname=" + args[db+5]).c_str();
+    }
+    if (searchArgumentInVector(args, "--testdb")) {
+        connectDatabases();
+        disconnectDatabases();
+        exit(0);
     }
 }
 
@@ -181,20 +194,27 @@ void Server::processMessages(std::map<std::string, std::string>& data) {
 
 void Server::connectDatabases() {
     try {
+        std::cout << CONN_INFO_DEFAULT << std::endl;
         conn = PQconnectdb(CONN_INFO_DEFAULT);
         if (PQstatus(conn) == CONNECTION_OK) {
             cmd.printINFO("Connection successful! Database: ", false);
             std::cout << PQdb(conn) << std::endl;
         } else {
-            cmd.printERROR("Connection failed!", false);
+            cmd.printERROR("Connection failed!");
         }
     } catch (const std::exception &e) {
         cmd.printERROR(e.what());
     }
 }
 
-void Server::disconnectDatabases() const {
-    PQfinish(conn);
+void Server::disconnectDatabases() {
+    if (PQstatus(conn) == CONNECTION_OK) {
+        PQfinish(conn);
+        cmd.printINFO("Disconnection successful! Database: ", false);
+        std::cout << PQdb(conn) << std::endl;
+    } else {
+        cmd.printERROR("Disconnection failed!");
+    }
 }
 
 bool Server::searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument) {

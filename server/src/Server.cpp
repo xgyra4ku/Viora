@@ -194,7 +194,8 @@ void Server::processMessages(std::map<std::string, std::string>& data) {
 
 void Server::connectDatabases() {
     try {
-        conn = PQconnectdb(CONN_INFO_DEFAULT);
+        std::cout << connectionInfo << std::endl;
+        conn = PQconnectdb(connectionInfo);
         if (PQstatus(conn) == CONNECTION_OK) {
             cmd.printINFO("Connection successful! Database: ", false);
             std::cout << PQdb(conn) << std::endl;

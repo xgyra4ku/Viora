@@ -1,64 +1,138 @@
 #ifndef SERVER_H
 #define SERVER_H
+/**
+ *  Server
+ *  @version 0.0.21
+ *  @date 01.01.2025
+ *  @file Server.h
+ */
+#define SERVER_VERSION "0.0.21"
+/**
+ * Default connection info
+ */
+#define CONN_INFO_DEFAULT "host=localhost port=5432 dbname=testdb user=postgres password=postgres connect_timeout=10"
 
-#define SERVER_VERSION "0.0.2"
-#define CONN_INFO_DEFAULT "dbname=testdb user=kyra password=1029 host=localhost port=5555"
-
+/**
+ * Includes
+ */
 #include <winsock2.h>
 #include <vector>
 #include <libpq-fe.h>
 
+/**
+ * Local includes
+ */
 #include "structures.h"
 #include "Info.h"
 
+/**
+ * Libs
+ */
 #pragma comment(lib, "ws2_32.lib")
 
+/**
+ * Constants
+ */
 constexpr int SERVER_PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
 
+/**
+ * Main server class
+ */
 class Server {
-    bool DEBUG = false;
+ /**
+  * Constants
+  */
+ const char *SERVER_ADDRESS = "127.0.0.1";
+ const char *connectionInfo = CONN_INFO_DEFAULT;
+ /**
+  * Flags
+  */
+ bool DEBUG = false;
+ /**
+  * Objects and variables
+  */
+ //Databases
+ PGconn *conn;
+ std::string address, port;
+ //Info
+ Info cmd;
+ //Network
+ sMessage message;
+ sockaddr_in serverAddr, clientAddr;
+ SOCKET serverSocket, clientSocket;
+ int clientAddrSize;
+ /**
+  * Vectors
+  */
+ std::vector<sClientInfo> clients;
+ /**
+  * Other variables
+  */
 
+ /**
+  * Private functions
+  */
+ /**
+  * @brief HandleClient - это функция обработки клиента
+  * @param clientSocket - сокет клиента
+  */
+ void HandleClient(SOCKET clientSocket);
+ /**
+  * @brief processMessages - обработка сообщений
+  * @param data - данные которые пришли
+  */
+ void processMessages(std::map<std::string, std::string> &data);
+ /**
+  * @brief connectDatabases - подключение к базам
+  */
+ void connectDatabases();
+ /**
+  * @brief disconnectDatabases - отключение от баз
+  */
+ void disconnectDatabases();
+ /**
+  * @brief processArguments - обработка аргументов
+  * @param argc - количество аргументов
+  * @param argv - аргументы
+  */
+ void processArguments(int argc, char *argv[]);
+ /**
+  * Private static functions
+  */
+ /**
+  * @brief searchArgumentInVector - поиск аргумента в векторе
+  * @param vector - вектор с аргументами
+  * @param argument - аргумент
+  * @return если аргумент найден возвращает true если не найден возвращает false
+  */
+ static bool searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument);
 
-    PGconn *conn;
+ /**
+  * @brief getArgumentValue - получение значения аргумента
+  * @param vector - вектор с аргументами
+  * @param argument - аргумент
+  * @return если аргумент найден возвращает его индекс если не найден возвращает -1
+  */
+ static int getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);
 
-    Info cmd;
-
-    sMessage message;
-
-    std::vector<sClientInfo> clients;
-
-    sockaddr_in serverAddr{}, clientAddr{};
-    SOCKET serverSocket{}, clientSocket{};
-
-    int clientAddrSize{};
-
-    std::string address, port;
-    const char *connectionInfo = CONN_INFO_DEFAULT;
-
-
-    void HandleClient(SOCKET clientSocket);
-    void connectDatabases();
-    void disconnectDatabases();
-    void processMessages(std::map<std::string, std::string> &data);
-    void processArguments(int argc, char* argv[]);
-
-    static bool searchArgumentInVector(const std::vector<std::string> &vector, const std::string &argument);
-    static int getArgumentValue(const std::vector<std::string> &vector, const std::string &argument);
 public:
-    /**
-     * Default constructor.
-     * Initializes the server socket and addresses.
-     */
-    Server(int argc, char* argv[]);
-    /**
-     * Destructor for the Server class.
-     * Cleans up resources by closing sockets and performing necessary cleanup.
-     */
-    ~Server();
+ /**
+  * @brief Конструктор класса Server
+  * @param argc - количество аргументов
+  * @param argv - аргументы
+  */
+ Server(int argc, char *argv[]);
 
-    void run();
-    void stop();
+ /**
+  * Destructor for the Server class.
+  * Cleans up resources by closing sockets and performing necessary cleanup.
+  */
+ ~Server();
+
+ void run();
+
+ void stop();
 };
 
 
