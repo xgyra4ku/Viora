@@ -75,7 +75,7 @@ struct sMessage {
             if (offset + value_size > buffer.size()) break;
 
             // Чтение значения
-            std::string value(buffer.data() + offset, value_size);
+            const std::string value(buffer.data() + offset, value_size);
             offset += value_size;
             // записываем в данные
             data[key] = value;
@@ -83,10 +83,24 @@ struct sMessage {
     }
 };
 
+/**
+ * sClientInfo - Структура информации о клиенте
+ */
 struct sClientInfo {
     std::string username; // Имя пользователя
     std::string id; // ID УСТРОЙСТВА
     SOCKET socket;        // Сокет клиента
+};
+
+/**
+ *
+ */
+struct sSocketGuard {
+    SOCKET sock;
+    explicit sSocketGuard(const SOCKET s) : sock(s) {}
+    ~sSocketGuard() {
+        if (sock != INVALID_SOCKET) closesocket(sock);
+    }
 };
 
 #endif // STRUCTURES_H

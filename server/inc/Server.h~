@@ -1,10 +1,14 @@
-#ifndef SERVER_H
-#define SERVER_H
 /**
  *  Server
  *  @version 0.0.21
  *  @date 01.01.2025
  *  @file Server.h
+ */
+#ifndef SERVER_H
+#define SERVER_H
+
+/**
+ * Server version
  */
 #define SERVER_VERSION "0.0.21"
 /**
@@ -15,14 +19,19 @@
 /**
  * Includes
  */
+// windsock2.h - для работы с сокетами
 #include <winsock2.h>
+// vector - для работы с векторами
 #include <vector>
+// lib-fe.h - для работы с базою̆ данных postgresql
 #include <libpq-fe.h>
 
 /**
  * Local includes
  */
+// structures.h - для работы с структурами
 #include "structures.h"
+// Info.h - для работы с информациею̆ и выводом
 #include "Info.h"
 
 /**
@@ -45,10 +54,12 @@ class Server {
   */
  const char *SERVER_ADDRESS = "127.0.0.1";
  const char *connectionInfo = CONN_INFO_DEFAULT;
+
  /**
   * Flags
   */
  bool DEBUG = false;
+
  /**
   * Objects and variables
   */
@@ -62,6 +73,7 @@ class Server {
  sockaddr_in serverAddr, clientAddr;
  SOCKET serverSocket, clientSocket;
  int clientAddrSize;
+
  /**
   * Vectors
   */
@@ -73,33 +85,46 @@ class Server {
  /**
   * Private functions
   */
+
  /**
   * @brief HandleClient - это функция обработки клиента
   * @param clientSocket - сокет клиента
   */
  void HandleClient(SOCKET clientSocket);
+
+ /**
+  * @brief verificationClient - функция верификации клиента
+  * @param clientSocket - сокет клиента
+  */
+ void verificationClient(SOCKET& clientSocket);
+
  /**
   * @brief processMessages - обработка сообщений
   * @param data - данные которые пришли
   */
  void processMessages(std::map<std::string, std::string> &data);
+
  /**
   * @brief connectDatabases - подключение к базам
   */
  void connectDatabases();
+
  /**
   * @brief disconnectDatabases - отключение от баз
   */
  void disconnectDatabases();
+
  /**
   * @brief processArguments - обработка аргументов
   * @param argc - количество аргументов
   * @param argv - аргументы
   */
  void processArguments(int argc, char *argv[]);
+
  /**
   * Private static functions
   */
+
  /**
   * @brief searchArgumentInVector - поиск аргумента в векторе
   * @param vector - вектор с аргументами
@@ -125,16 +150,22 @@ public:
  Server(int argc, char *argv[]);
 
  /**
-  * Destructor for the Server class.
-  * Cleans up resources by closing sockets and performing necessary cleanup.
+  * @brief Деструктор
   */
  ~Server();
 
+ /**
+  * @brief run - запуск сервера
+  */
  void run();
 
+ /**
+  * @brief stop - остановка сервера
+  */
  void stop();
 };
 
-
-
+/**
+ * End
+ */
 #endif //SERVER_H

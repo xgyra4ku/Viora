@@ -93,6 +93,12 @@ class Server {
  void HandleClient(SOCKET clientSocket);
 
  /**
+  * @brief verificationClient - функция верификации клиента
+  * @param clientSocket - сокет клиента
+  */
+ void verificationClient(const SOCKET& clientSocket);
+
+ /**
   * @brief processMessages - обработка сообщений
   * @param data - данные которые пришли
   */

@@ -92,4 +92,15 @@ struct sClientInfo {
     SOCKET socket;        // Сокет клиента
 };
 
+/**
+ * sSocketGuard - Структура защиты сокета
+ */
+struct sSocketGuard {
+    SOCKET sock;
+    explicit sSocketGuard(const SOCKET s) : sock(s) {}
+    ~sSocketGuard() {
+        if (sock != INVALID_SOCKET) closesocket(sock);
+    }
+};
+
 #endif // STRUCTURES_H
