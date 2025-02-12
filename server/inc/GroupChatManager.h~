@@ -1,0 +1,14 @@
+#ifndef GROUPCHATMANAGER_H
+#define GROUPCHATMANAGER_H
+
+#include "InterfaceChatManager.h"
+
+class GroupChatManager : protected InterfaceChatManager {
+
+public:
+
+};
+
+
+
+#endif //GROUPCHATMANAGER_H

@@ -9,10 +9,27 @@ set(POSTGRESQL_LIB_DIR "C:/Program Files/PostgreSQL/17/lib")
 
 # Добавляем основной исходный файл для сервера
 add_executable(Server main.cpp
-        src/Server.cpp
-        inc/Server.h
         inc/structures.h
+
+        inc/Server.h
+        src/Server.cpp
+
+        inc/Info.h
         src/Info.cpp
+
+        inc/ChatSystem.h
+        src/ChatSystem.cpp
+
+        inc/PrivateChatManager.h
+        src/PrivateChatManager.cpp
+
+        inc/GroupChatManager.h
+        src/GroupChatManager.cpp
+
+        inc/InterfaceChatManager.h
+        src/InterfaceChatManager.cpp
+
+
 )
 
 # Указываем компилятору путь к заголовочным файлам
