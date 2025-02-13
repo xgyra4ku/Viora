@@ -32,8 +32,5 @@ GroupChat ChatSystem::createGroupChat(const unsigned int &userID, const std::str
     return Chat;
 }
 
-bool ChatSystem::idCheck(unsigned int id) {
-
-}
 
 
