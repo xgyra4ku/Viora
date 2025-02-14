@@ -18,7 +18,7 @@ public:
     ~ChatSystem();
 
     PrivateChat createPrivateChat(const unsigned int& userID1, const unsigned int& userID2);
-    GroupChat createGroupChat(const unsigned int& userID, const std::string& groupName);
+    // GroupChat createGroupChat(const unsigned int& userID, const std::string& groupName);
 };
 
 
