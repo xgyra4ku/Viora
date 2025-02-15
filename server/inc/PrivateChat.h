@@ -5,6 +5,7 @@
 
 class PrivateChat final : protected InterfaceChat {
 public:
+    void getBackMessage() override;
     using InterfaceChat::setNameFolder;
     using InterfaceChat::setIDChat;
 };
