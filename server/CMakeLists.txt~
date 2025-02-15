@@ -27,9 +27,10 @@ add_executable(Server main.cpp
         src/GroupChatManager.cpp
 
         inc/InterfaceChatManager.h
-        inc/InterfaceChatManager.cpp
+        src/InterfaceChatManager.cpp
 
-        
+        inc/MessageManager.h
+        src/MessageManager.cpp
 )
 
 # Указываем компилятору путь к заголовочным файлам

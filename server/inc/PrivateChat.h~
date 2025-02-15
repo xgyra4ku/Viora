@@ -5,7 +5,7 @@
 
 class PrivateChat final : protected InterfaceChat {
 public:
-    void getOneHundredMessage(int idHundred);
+    void getBackMessage();
     using InterfaceChat::setNameFolder;
     using InterfaceChat::setIDChat;
 };

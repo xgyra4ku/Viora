@@ -20,16 +20,17 @@ add_executable(Server main.cpp
         inc/ChatSystem.h
         src/ChatSystem.cpp
 
-        inc/PrivateChatManager.h
-        src/PrivateChatManager.cpp
+        inc/PrivateChat.h
+        src/PrivateChat.cpp
 
-        inc/GroupChatManager.h
-        src/GroupChatManager.cpp
+        inc/GroupChat.h
+        src/GroupChat.cpp
 
-        inc/InterfaceChatManager.h
-        src/InterfaceChatManager.cpp
+        inc/InterfaceChat.h
+        src/InterfaceChat.cpp
 
-
+        inc/MessageManager.h
+        src/MessageManager.cpp
 )
 
 # Указываем компилятору путь к заголовочным файлам
